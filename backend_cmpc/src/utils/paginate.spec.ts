@@ -1,10 +1,10 @@
 import { paginate, PaginatedResult } from './paginate'; // Import both the function and the interface
 import { Model } from 'sequelize-typescript'; // Or just 'sequelize' if you use the generic Model type
 
-// A basic mock Sequelize model class that only needs findAndCountAll
-// We'll use a generic type T for the model's data
+ 
+ 
 class MockSequelizeModel<T> extends Model {
-  // This static property will hold our Jest mock function
+ 
   static findAndCountAll: jest.Mock;
 }
 
@@ -12,7 +12,7 @@ describe('paginate', () => {
   let mockModel: typeof MockSequelizeModel; // To mock the static methods of the model
 
   beforeEach(() => {
-    // Reset the mock before each test to ensure a clean state
+ 
     mockModel = MockSequelizeModel;
     mockModel.findAndCountAll = jest.fn();
   });
@@ -113,8 +113,8 @@ describe('paginate', () => {
   });
 
   it('should handle zero limit gracefully', async () => {
-    // In a real scenario, limit 0 might throw an error or behave differently.
-    // Here we're testing that it doesn't crash and returns expected meta.
+ 
+ 
     mockModel.findAndCountAll.mockResolvedValue({
       count: 50,
       rows: [], // No rows for limit 0

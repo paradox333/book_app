@@ -1,4 +1,4 @@
-// src/components/BookForm/ImageUpload.tsx
+ 
 import React, { useState, useEffect } from 'react';
 
 interface ImageUploadProps {
@@ -9,7 +9,7 @@ interface ImageUploadProps {
 const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePreview }) => {
   const [preview, setPreview] = useState<string | null>(initialImagePreview || null);
 
-  // Actualiza la previsualización si initialImagePreview cambia (ej. al cargar libro para edición)
+ 
   useEffect(() => {
     setPreview(initialImagePreview || null);
   }, [initialImagePreview]);
@@ -32,7 +32,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePr
   const handleClearImage = () => {
     setPreview(null);
     onImageSelect(null, null);
-    // Limpiar el input file si es posible, aunque es difícil en React
+ 
     const fileInput = document.getElementById('imageUpload') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
   };

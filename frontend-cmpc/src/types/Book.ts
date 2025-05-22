@@ -1,4 +1,4 @@
-// src/types/Book.ts
+ 
 export interface Libro {
   id: string;
   titulo: string;
@@ -32,7 +32,7 @@ export interface Book {
   deletedAt: string;
 }
 
-// Interfaz para los parámetros de filtro/ordenamiento/paginación
+ 
 export interface BookQueryParams {
   page?: number;
   limit?: number; // Cantidad de elementos por página
@@ -45,7 +45,7 @@ export interface BookQueryParams {
   search?: string; // Término de búsqueda
 }
 
-// Interfaz para la respuesta de la API de listado paginado
+ 
 export interface PaginatedBooksResponse {
   data: Book[];
   total: number;

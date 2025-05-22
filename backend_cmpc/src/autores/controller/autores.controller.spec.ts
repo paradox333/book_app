@@ -108,8 +108,6 @@ describe('AutoresController', () => {
       const restored = { id: 1, nombre: 'Autor Restaurado' };
       mockAutoresService.restore.mockResolvedValue(restored);
 
-      // Note que el método restore recibe un número directamente, no string,
-      // así que simulamos llamada directa con número.
       const result = await controller.restore(1);
 
       expect(mockAutoresService.restore).toHaveBeenCalledWith(1);

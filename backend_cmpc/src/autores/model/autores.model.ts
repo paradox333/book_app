@@ -1,4 +1,3 @@
-// src/autores/entities/author.model.ts
 import {
   Table,
   Column,

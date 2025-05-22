@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-// Importamos la interfaz Libro para la carga de datos en edición
+ 
 import type { Book, LibroResponse } from '../../types/Book'; // Asegúrate de que esta ruta sea correcta
 import ImageUpload from './ImageUpload'; // Componente para cargar imagen
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 const API_BASE_URL = import.meta.env.API_BASE_URL;
 
-// Interfaz para los datos del formulario (lo que el usuario ingresa)
+ 
 interface LibroFormValues {
   id?: string; // Solo para edición
   titulo: string;
@@ -21,7 +21,7 @@ interface LibroFormValues {
   imagenUrl?: string; // Para previsualización de imagen existente
 }
 
-// Interfaz para las opciones de filtro (lo que obtenemos de los endpoints de catálogo)
+ 
 interface FilterOption {
   id: number;
   nombre: string;
@@ -37,15 +37,15 @@ const LibroForm: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Estados para almacenar todas las opciones existentes (para lookup)
+ 
   const [generosExistentes, setGenerosExistentes] = useState<FilterOption[]>([]);
   const [autoresExistentes, setAutoresExistentes] = useState<FilterOption[]>([]);
   const [editorialesExistentes, setEditorialesExistentes] = useState<FilterOption[]>([]);
 
-  // Inicializa React Hook Form
+ 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<LibroFormValues>();
 
-  // Función auxiliar para buscar o crear una entidad (Autor, Genero, Editorial)
+ 
   const findOrCreateEntity = useCallback(async (
     entityType: 'autores' | 'generos' | 'editoriales', // El nombre del endpoint
     entityName: string,
@@ -57,30 +57,30 @@ const LibroForm: React.FC = () => {
     }
 
     const trimmedName = entityName.trim();
-    // 1. Intentar encontrar una entidad existente por nombre (insensible a mayúsculas/minúsculas)
+ 
     const existing = existingOptions.find(opt => opt.nombre.toLowerCase() === trimmedName.toLowerCase());
     if (existing) {
       return existing.id; // Entidad ya existe, devolver su ID
     }
 
-    // 2. Si no existe, intentar crearla
+ 
     try {
       const createRes = await axios.post<{ id: number; nombre: string }>(
         `${API_BASE_URL}/${entityType}`,
         { nombre: trimmedName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Asumiendo que el backend devuelve { id: number, nombre: string } para la nueva entidad
+ 
       return createRes.data.id;
     } catch (err: any) {
-      // Capturar errores específicos (ej. "ya existe" si tu backend lo devuelve así)
+ 
       console.error(`Error al crear ${entityType.slice(0, -1)} '${trimmedName}':`, err.response?.data || err.message);
       setError(`Error al crear ${entityType.slice(0, -1)} '${trimmedName}'. Puede que ya exista o haya un problema con el servidor.`);
       return null;
     }
   }, [token]); // Dependencia del token
 
-  // --- EFECTO para cargar todas las opciones de entidades (autores, géneros, editoriales) ---
+ 
   useEffect(() => {
     const fetchAllOptions = async () => {
       if (!token) {
@@ -94,9 +94,9 @@ const LibroForm: React.FC = () => {
           axios.get<any>(`${API_BASE_URL}/editoriales`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        // Ajusta según la estructura REAL de tu backend para estos listados
-        // Si es un array directo: .data
-        // Si es un objeto con propiedad 'data': .data.data
+ 
+ 
+ 
         setGenerosExistentes(generosRes.data.data || generosRes.data || []);
         setAutoresExistentes(autoresRes.data.data || autoresRes.data || []);
         setEditorialesExistentes(editorialesRes.data.data || editorialesRes.data || []);
@@ -110,33 +110,33 @@ const LibroForm: React.FC = () => {
     fetchAllOptions();
   }, [token, logout]); // Dependencias para re-cargar si el token cambia o si deslogueamos
 
-  // --- EFECTO para cargar los datos del libro si estamos en modo edición ---
-  // Este useEffect debe ejecutarse DESPUÉS de que las opciones estén cargadas,
-  // ya que necesita los nombres para los IDs del libro
+ 
+ 
+ 
   useEffect(() => {
     if (id && autoresExistentes.length > 0 && generosExistentes.length > 0 && editorialesExistentes.length > 0) {
       const fetchLibroParaEdicion = async () => {
         setLoading(true);
         setError(null);
         try {
-          // Asumo que el endpoint de detalle de libro devuelve los IDs de las relaciones (autorId, generoId, editorialId)
-          // Si devuelve los objetos anidados (libro.autor.id), también funcionará
+ 
+ 
           const response = await axios.get<LibroResponse>(`${API_BASE_URL}/libros/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           const libroData = response.data;
 
-          // Rellenar el formulario con los datos del libro
+ 
           setValue('titulo', libroData.titulo);
           setValue('precio', libroData.precio);
           setValue('disponible', libroData.disponible);
           setImagePreview(libroData.imagenUrl || null);
 
-          // Buscar los NOMBRES correspondientes a los IDs devueltos por el backend
-          // Asumo que libroData contiene autorId, generoId, editorialId o los objetos anidados.
-          // Si el backend devuelve solo el nombre (no el ID) para el libro individual,
-          // ajusta `libroData.autor` a `libroData.autorId` en el `find` y asegúrate de que el backend
-          // de libros no devuelve un nombre sino un id para estos campos en el modo edición.
+ 
+ 
+ 
+ 
+ 
           const autorNombre = autoresExistentes.find(a => a.id === libroData.autorId)?.nombre || '';
           const generoNombre = generosExistentes.find(g => g.id === libroData.generoId)?.nombre || '';
           const editorialNombre = editorialesExistentes.find(e => e.id === libroData.editorialId)?.nombre || '';
@@ -170,7 +170,7 @@ const LibroForm: React.FC = () => {
     setError(null);
     setSuccessMessage(null);
 
-    // --- PASO 1: Buscar o crear Autor, Género, Editorial ---
+ 
     const autorId = await findOrCreateEntity('autores', data.autorName, autoresExistentes);
     if (autorId === null) { setLoading(false); return; } // Si hubo un error o no se encontró/creó
 
@@ -180,7 +180,7 @@ const LibroForm: React.FC = () => {
     const editorialId = await findOrCreateEntity('editoriales', data.editorialName, editorialesExistentes);
     if (editorialId === null) { setLoading(false); return; }
 
-    // --- PASO 2: Construir FormData para el libro ---
+ 
     const formData = new FormData();
     formData.append('titulo', data.titulo);
     formData.append('autorId', String(autorId)); // Enviar el ID obtenido/creado
@@ -202,17 +202,17 @@ const LibroForm: React.FC = () => {
     if (selectedImage) {
       formData.append('image', selectedImage); // 'image' debe coincidir con el campo que espera tu backend para la imagen
     }
-    // Si no se selecciona una nueva imagen pero ya existe una y queremos mantenerla,
-    // tu backend debe tener la lógica para no borrarla si no se envía un nuevo archivo.
-    // Opcional: si quieres enviar el URL de la imagen existente si no se selecciona nueva:
-    // else if (imagePreview) {
-    //   formData.append('imagenUrl', imagePreview);
-    // }
+ 
+ 
+ 
+ 
+ 
+ 
 
-    // --- PASO 3: Enviar la solicitud de creación/actualización del libro ---
+ 
     try {
       if (id) {
-        // Modo Edición
+ 
         await axios.put(`${API_BASE_URL}/libros/${id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data', // Importante para enviar archivos
@@ -221,16 +221,16 @@ const LibroForm: React.FC = () => {
         });
         setSuccessMessage('Libro actualizado exitosamente.');
       } else {
-        // Modo Alta
+ 
         await axios.post(`${API_BASE_URL}/libros`, bookPayload, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
         });
         setSuccessMessage('Libro creado exitosamente.');
-        // reset(); // Descomentar si quieres resetear el formulario después de crear
-        // setSelectedImage(null);
-        // setImagePreview(null);
+ 
+ 
+ 
       }
       navigate('/books'); // Redirigir a la lista después de la operación
     } catch (err: any) {
@@ -247,15 +247,15 @@ const LibroForm: React.FC = () => {
     setImagePreview(previewUrl);
   };
 
-  // Renderizado condicional para estados de carga/error
+ 
   if (!token) return <p className="error-message">Debes iniciar sesión para gestionar libros.</p>;
 
-  // Determinar si estamos cargando las opciones o los datos del libro en edición
+ 
   const isLoadingInitialData = (id && !autoresExistentes.length) || loading;
 
   if (isLoadingInitialData) return <p>Cargando datos del formulario...</p>;
   if (error) return <p className="error-message" style={{ color: 'red' }}>{error}</p>; // Mostrar error general
-  // Si no hay error general, pero sí hay un mensaje de éxito
+ 
   if (successMessage) return <p className="success-message" style={{ color: 'green' }}>{successMessage}</p>;
 
 

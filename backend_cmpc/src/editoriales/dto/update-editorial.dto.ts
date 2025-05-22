@@ -1,4 +1,3 @@
-// src/editoriales/dto/update-editorial.dto.ts
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateEditorialDto } from './create-editorial.dto';
 

@@ -1,4 +1,3 @@
-// src/editoriales/editorial.model.ts
 import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, DeletedAt } from 'sequelize-typescript';
 
 @Table({

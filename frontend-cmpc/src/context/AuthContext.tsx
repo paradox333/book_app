@@ -1,4 +1,4 @@
-// src/context/AuthContext.tsx
+ 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -28,7 +28,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// CAMBIO AQUI: Ahora es una exportación por defecto
+ 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('jwt_token'));
   const [user, setUser] = useState<User | null>(null);
@@ -95,10 +95,10 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 };
 
 
-// useAuth se sigue exportando como nombrado
+ 
 export default AuthProvider;
 
-// useAuth se sigue exportando como nombrado
+ 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

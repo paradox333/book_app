@@ -1,4 +1,4 @@
-// src/components/BookList/BookFilter.tsx
+ 
 import React, { useState, useEffect } from 'react';
 import type { BookQueryParams } from '../../types/Book';
 import useDebounce from '../../hooks/useDebounce'; // Podrías usar debounce también para los filtros si hay muchos
@@ -17,7 +17,7 @@ const BookFilter: React.FC<BookFilterProps> = ({ onFilterChange, currentFilters 
     currentFilters.available === false ? 'unavailable' : ''
   );
 
-  // Puedes añadir opciones predefinidas para géneros, editoriales, etc.
+ 
   const genres = ['Ficción', 'Ciencia Ficción', 'Fantasia', 'Misterio', 'Historia', 'Biografía', 'Otro'];
   const editorials = ['Planeta', 'Penguin Random House', 'Anagrama', 'Seix Barral', 'Otro'];
 

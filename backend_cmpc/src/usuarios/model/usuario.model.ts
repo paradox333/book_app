@@ -1,4 +1,3 @@
-// src/usuarios/entities/usuario.model.ts
 import {
   Table,
   Column,

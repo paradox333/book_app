@@ -2,20 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import * as bcryptjs from 'bcryptjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston'; // Usa WINSTON_MODULE_PROVIDER según tu servicio
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { UsuariosService } from './usuarios.service';
 import { Usuario } from '../model/usuario.model';
 import { CreateUsuarioDto } from '../dto/create-usuario.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 
 
-// --- Mockear la librería bcryptjs ---
 jest.mock('bcryptjs', () => ({
   hash: jest.fn((password) => Promise.resolve(`hashed_${password}`)),
   compare: jest.fn((password, hashed) => Promise.resolve(password === 'correct_password_mock')),
 }));
 
-// --- Mockear la función paginate ---
 jest.mock('src/utils/paginate', () => ({
   paginate: jest.fn((model, page, limit) => Promise.resolve({
     items: [
@@ -33,7 +31,6 @@ jest.mock('src/utils/paginate', () => ({
 }));
 
 
-// --- FACTORY FUNCTION PARA INSTANCIAS MOCK DE USUARIO (MOVIDA AQUÍ) ---
 const createMockUserInstance = (initialData?: any) => {
   const instance = {
     id: initialData?.id || 1,
@@ -49,8 +46,6 @@ const createMockUserInstance = (initialData?: any) => {
 };
 
 
-// --- Mockear la función paginate ---
-// Asumiendo que paginate es un archivo separado en src/utils/paginate.ts
 jest.mock('src/utils/paginate', () => ({
   paginate: jest.fn((model, page, limit) => Promise.resolve({
     items: [
@@ -67,7 +62,7 @@ jest.mock('src/utils/paginate', () => ({
   })),
 }));
 
-// Importar la función paginate mockeada para poder espiarla
+ 
 import { paginate } from 'src/utils/paginate';
 
 
@@ -76,7 +71,7 @@ describe('UsuariosService', () => {
   let usuarioModel: typeof Usuario;
   let logger: any;
 
-  // Mock del modelo Usuario
+ 
   const mockUsuarioModel = {
     findOne: jest.fn(),
     findByPk: jest.fn(),
@@ -85,7 +80,7 @@ describe('UsuariosService', () => {
     destroy: jest.fn(), // Aunque findOne().destroy() es más común, mockeamos si se llama directamente
   };
 
-  // Mock para el logger de Winston
+ 
   const mockWinstonLogger = {
     warn: jest.fn(),
     info: jest.fn(),
@@ -93,15 +88,15 @@ describe('UsuariosService', () => {
     debug: jest.fn(),
   };
 
-  // Una instancia de usuario mockeada para ser devuelta por findOne/findByPk
+ 
   const mockUserInstance = {
     id: 1,
     email: 'test@example.com',
     nombre: 'Test User',
     passwordHash: 'hashed_password_123',
-    // Mockeamos el método 'update' de la instancia de Sequelize
+ 
     update: jest.fn((data) => Promise.resolve({ ...mockUserInstance, ...data })),
-    // Mockeamos el método 'destroy' de la instancia de Sequelize
+ 
     destroy: jest.fn(() => Promise.resolve()),
   };
 
@@ -114,7 +109,7 @@ describe('UsuariosService', () => {
           useValue: mockUsuarioModel,
         },
         {
-          // Provee el mock para el logger de Winston con el token correcto
+ 
           provide: WINSTON_MODULE_PROVIDER,
           useValue: mockWinstonLogger,
         },
@@ -125,11 +120,11 @@ describe('UsuariosService', () => {
     usuarioModel = module.get<typeof Usuario>(getModelToken(Usuario));
     logger = module.get(WINSTON_MODULE_PROVIDER);
 
-    // Limpiar todos los mocks antes de cada test
+ 
     jest.clearAllMocks();
 
-    // Reestablecer las implementaciones de los mocks para asegurar aislamiento
-    // y para poder configurar su comportamiento en cada test
+ 
+ 
     (bcryptjs.hash as jest.Mock).mockImplementation((password) => Promise.resolve(`hashed_${password}`));
     (bcryptjs.compare as jest.Mock).mockImplementation((password, hashed) => Promise.resolve(password === 'correct_password_mock'));
     (paginate as jest.Mock).mockImplementation((model, page, limit) => Promise.resolve({
@@ -146,7 +141,7 @@ describe('UsuariosService', () => {
       },
     }));
 
-    // Configurar los mocks del modelo y de la instancia para valores por defecto
+ 
     (mockUsuarioModel.findOne as jest.Mock).mockClear();
     (mockUsuarioModel.findByPk as jest.Mock).mockClear();
     (mockUsuarioModel.create as jest.Mock).mockClear();
@@ -159,7 +154,7 @@ describe('UsuariosService', () => {
     expect(service).toBeDefined();
   });
 
-  // --- Tests para el método 'create' ---
+ 
   describe('create', () => {
     const createDto: CreateUsuarioDto = {
       email: 'newuser@example.com',
@@ -207,7 +202,7 @@ describe('UsuariosService', () => {
     });
   });
 
-  // --- Tests para el método 'findAll' ---
+ 
   describe('findAll', () => {
     it('should return a paginated list of users', async () => {
       const page = 1;
@@ -224,7 +219,7 @@ describe('UsuariosService', () => {
     });
   });
 
-  // --- Tests para el método 'findOne' ---
+ 
   describe('findOne', () => {
     const userId = 1;
 
@@ -249,7 +244,7 @@ describe('UsuariosService', () => {
     });
   });
 
-  // Add this describe block within the main 'describe('UsuariosService', () => { ... });' block
+ 
 function createMockUserInstance(data: Partial<Usuario>): Usuario {
   const user = {
     ...data,
@@ -259,7 +254,7 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
     }),
         destroy: jest.spyOn(bcryptjs, 'hash').mockImplementation(async () => 'hashed_newStrongPassword')
   };
-  // Asignar el prototipo para que parezca una instancia real de Usuario
+ 
   return Object.setPrototypeOf(user, Usuario.prototype);
 }
   describe('update', () => {
@@ -297,11 +292,11 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
     expect(result).toEqual(mockUserInstance);
   });
 
-  // Aquí puedes agregar más tests de `update`, uno por escenario
+ 
 });
 
 
-  // --- Tests para el método 'remove' ---
+ 
   describe('remove', () => {
     const userId = 1;
     let findOneSpy: jest.SpyInstance;
@@ -325,9 +320,9 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
     });
 
     it('should throw NotFoundException if user to remove is not found (delegated to findOne)', async () => {
-      // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
-      // findOneSpy debe RECHAZAR la promesa con NotFoundException,
-      // simulando el comportamiento real de findOne cuando no encuentra el usuario.
+ 
+ 
+ 
       findOneSpy.mockRejectedValue(new NotFoundException(`Usuario ${userId} no encontrado`));
 
       await expect(service.remove(userId)).rejects.toThrow(NotFoundException);
@@ -336,23 +331,23 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
       expect(findOneSpy).toHaveBeenCalledWith(userId);
       expect(mockUserInstance.destroy).not.toHaveBeenCalled();
       expect(logger.info).not.toHaveBeenCalled();
-      // En este escenario, el logger.warn es llamado por la implementación real de findOne,
-      // pero como estamos mockeando `findOneSpy` para que rechace, la ejecución del `warn`
-      // dentro del `findOne` mockeado no ocurre. Si necesitaras probar ese log,
-      // tendrías que simularlo en el propio `mockRejectedValue` o en un spy separado del logger.
+ 
+ 
+ 
+ 
     });
   });
 
-  // --- Tests para el método 'restore' ---
+ 
   describe('restore', () => {
     const userId = 1;
 
     it('should restore a soft-deleted user', async () => {
-      // Configuramos findOne para que encuentre un usuario que fue "eliminado" (paranoid: false)
+ 
       (mockUsuarioModel.findOne as jest.Mock).mockResolvedValue({ ...mockUserInstance, deletedAt: new Date() });
       (mockUsuarioModel.restore as jest.Mock).mockResolvedValue(1); // Sequelize devuelve 1 si se restauró
 
-      // Mockeamos findByPk para que devuelva el usuario restaurado al final del método
+ 
       (mockUsuarioModel.findByPk as jest.Mock).mockResolvedValue(mockUserInstance);
 
       const result = await service.restore(userId);
@@ -379,12 +374,12 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
     });
   });
 
-  // --- Tests para el método 'findByEmail' ---
+ 
    describe('findByEmail', () => {
     const email = 'search@example.com';
 
     it('should return a user if found', async () => {
-      // Configuramos el mockUserInstance para que su email coincida con el email de búsqueda
+ 
       (mockUsuarioModel.findOne as jest.Mock).mockResolvedValue({ ...mockUserInstance, email: email });
 
       const result = await service.findByEmail(email);
@@ -405,8 +400,8 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
     });
 
     it('should include soft-deleted users if includeDeleted is true', async () => {
-      // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
-      // Aseguramos que el email del objeto mockeado sea el de la búsqueda
+ 
+ 
       (mockUsuarioModel.findOne as jest.Mock).mockResolvedValue({
         ...mockUserInstance,
         email: email, // <--- SOBRESCRIBE el email del mockUserInstance
@@ -417,8 +412,8 @@ function createMockUserInstance(data: Partial<Usuario>): Usuario {
 
       expect(logger.info).toHaveBeenCalledWith('Buscando usuario por email', expect.any(Object));
       expect(usuarioModel.findOne).toHaveBeenCalledWith({ where: { email }, paranoid: false });
-      // Aquí también puedes ser más específico si quieres todos los campos del objeto devuelto,
-      // pero `expect.objectContaining` es suficiente para validar que el email y deletedAt son correctos.
+ 
+ 
       expect(result).toEqual(expect.objectContaining({ email: email, deletedAt: expect.any(Date) }));
     });
   });

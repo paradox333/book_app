@@ -1,4 +1,3 @@
-// src/generos/genero.model.ts
 import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, AllowNull, Unique } from 'sequelize-typescript';
 
 @Table({

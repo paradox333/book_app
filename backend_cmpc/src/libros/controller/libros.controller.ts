@@ -46,6 +46,6 @@ export class LibrosController {
 
   @Get('exportar/csv')
   async exportCsv(@Res() res: Response) {
-    await this.librosService.export(res); // importante: devuelve objetos planos
+    await this.librosService.export(res);
   }
 }

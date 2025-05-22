@@ -1,7 +1,6 @@
-// src/database/database.module.ts
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // Importa ConfigModule y ConfigService
+import { ConfigModule, ConfigService } from '@nestjs/config'; 
 import { Genero } from 'src/generos/model/genero.model';
 import { Editorial } from 'src/editoriales/model/editorial.model';
 import { Autor } from 'src/autores/model/autores.model';
@@ -15,7 +14,7 @@ import { Usuario } from 'src/usuarios/model/usuario.model';
       envFilePath: '.env',
     }),
     SequelizeModule.forRootAsync({
-      imports: [ConfigModule], // Asegúrate de importar ConfigModule si usas variables de entorno
+      imports: [ConfigModule], 
       useFactory: (configService: ConfigService) => ({
         dialect: 'postgres',
         host: configService.get<string>('DB_HOST'),

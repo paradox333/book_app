@@ -1,4 +1,4 @@
-// src/components/BookList/Pagination.tsx
+ 
 import React from 'react';
 
 interface PaginationProps {

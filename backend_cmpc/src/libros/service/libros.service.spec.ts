@@ -5,7 +5,6 @@ import { Logger } from 'winston';
 import { Libro } from '../models/libro.model';
 import * as fastCsv from 'fast-csv';
 
-// Mock del paginate
 jest.mock('src/utils/paginate', () => ({
   paginate: jest.fn().mockResolvedValue({ rows: [], count: 0 }),
 }));
@@ -177,7 +176,6 @@ describe('LibrosService', () => {
         end: jest.fn(),
       };
 
-      // Simular fastCsv
       const csvWriteMock = {
         pipe: jest.fn().mockReturnThis(),
         write: jest.fn(),

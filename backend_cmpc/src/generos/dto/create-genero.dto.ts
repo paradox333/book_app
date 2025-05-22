@@ -1,4 +1,3 @@
-// src/generos/dto/create-genero.dto.ts
 import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
 
 export class CreateGeneroDto {

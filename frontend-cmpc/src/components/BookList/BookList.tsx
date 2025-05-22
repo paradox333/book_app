@@ -1,4 +1,4 @@
-// src/components/BookList/BookList.tsx
+ 
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -31,8 +31,8 @@ interface PaginatedBooksResponse {
   limit: number;
 }
 
-// Interfaz para las opciones de filtro (géneros, editoriales, autores)
-// Basado en tu respuesta, los objetos tienen 'id' y 'nombre'
+ 
+ 
 interface FilterOption {
   id: number; // O string, dependiendo de tu backend si es UUID o numérico
   nombre: string;
@@ -45,31 +45,31 @@ const BookList: React.FC = () => {
   const [loadingBooks, setLoadingBooks] = useState<boolean>(true);
   const [errorBooks, setErrorBooks] = useState<string | null>(null);
 
-  // Estados de Paginación
+ 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const [totalBooks, setTotalBooks] = useState<number>(0);
   const [lastPage, setLastPage] = useState<number>(1);
 
-  // Estados de Filtros
+ 
   const [search, setSearch] = useState<string>('');
   const [genreFilter, setGenreFilter] = useState<string>('');
   const [editorialFilter, setEditorialFilter] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>('');
   const [availabilityFilter, setAvailabilityFilter] = useState<string>('');
 
-  // Estados de Ordenamiento
+ 
   const [sortBy, setSortBy] = useState<string>('title');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // --- ESTADOS para los datos de filtros dinámicos (obtenidos del backend) ---
+ 
   const [fetchedGenres, setFetchedGenres] = useState<FilterOption[]>([]);
   const [fetchedEditorials, setFetchedEditorials] = useState<FilterOption[]>([]);
   const [fetchedAuthors, setFetchedAuthors] = useState<FilterOption[]>([]);
   const [loadingFilters, setLoadingFilters] = useState<boolean>(true);
   const [errorFilters, setErrorFilters] = useState<string | null>(null);
 
-  // Función para obtener libros
+ 
   const fetchBooks = useCallback(async () => {
     if (!token) {
       setLoadingBooks(false);
@@ -111,7 +111,7 @@ const BookList: React.FC = () => {
     authorFilter, availabilityFilter, sortBy, sortOrder
   ]);
 
-  // --- EFECTO para obtener los datos de los filtros (géneros, editoriales, autores) ---
+ 
   useEffect(() => {
     const fetchFilterData = async () => {
       if (!token) {
@@ -127,12 +127,12 @@ const BookList: React.FC = () => {
           axios.get<any>(`${API_BASE_URL}/autores`),
         ]);
 
-        // --- AJUSTES BASADOS EN LAS RESPUESTAS DE TU BACKEND ---
+ 
 
-        // Géneros: La respuesta es directamente un array de objetos
+ 
         setFetchedGenres(genresRes.data || []);
 
-        // Editoriales y Autores: La respuesta es un objeto con una propiedad 'data'
+ 
         setFetchedEditorials(editorialsRes.data.data || []);
         setFetchedAuthors(authorsRes.data.data || []);
 
@@ -150,8 +150,8 @@ const BookList: React.FC = () => {
     fetchFilterData();
   }, [token]);
 
-  // Debounce para la búsqueda general
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+ 
+ 
   const debouncedSearch = useCallback(
     debounce((nextValue: string) => {
       setSearch(nextValue);
@@ -160,12 +160,12 @@ const BookList: React.FC = () => {
     []
   );
 
-  // Efecto que se ejecuta para cargar los libros cuando cambian los filtros o la paginación
+ 
   useEffect(() => {
     fetchBooks();
   }, [fetchBooks]);
 
-  // Manejadores de eventos
+ 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     debouncedSearch(e.target.value);
   };
@@ -204,7 +204,7 @@ const BookList: React.FC = () => {
     }
   };
 
-  // Mostrar mensajes de estado
+ 
   if (!token) return <div style={{ color: 'orange', textAlign: 'center', padding: '20px' }}>Debes iniciar sesión para ver los libros.</div>;
   if (loadingBooks && books.length === 0) return <div>Cargando libros...</div>;
   if (errorBooks) return <div style={{ color: 'red', textAlign: 'center', padding: '20px' }}>Error: {errorBooks}</div>;
@@ -283,7 +283,7 @@ const BookList: React.FC = () => {
       {books.length === 0 && !loadingBooks && !errorBooks ? (
         <p style={{ textAlign: 'center', color: '#666', fontSize: '1.1em' }}>No se encontraron libros que coincidan con los criterios.</p>
       ) : (
-        // Listado de Libros
+ 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
           {books.map((book) => (
             <div key={book.id} style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>

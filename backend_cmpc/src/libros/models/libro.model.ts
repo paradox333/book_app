@@ -1,4 +1,3 @@
-// src/libros/entities/libro.model.ts
 import {
   Table,
   Column,

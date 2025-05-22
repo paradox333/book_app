@@ -1,4 +1,3 @@
-// src/auth/controller/auth.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from '../service/auth.service';
@@ -17,16 +16,14 @@ describe('AuthController', () => {
 
   const mockAuthService = {
     login: jest.fn(),
-    validateUser: jest.fn(), // Añadido para simular AuthService completo
+    validateUser: jest.fn(), 
   };
 
-  // El mock del guard se mantiene para que el controlador tenga un req.user
-  // pero ya no lo espiaremos directamente.
   const mockLocalAuthGuard = {
     canActivate: jest.fn((context: ExecutionContext) => {
       const request = context.switchToHttp().getRequest();
       request.user = expectedUser;
-      return true; // Siempre permite el acceso
+      return true;
     }),
   };
 
@@ -41,7 +38,7 @@ describe('AuthController', () => {
       ],
     })
       .overrideGuard(LocalAuthGuard)
-      .useValue(mockLocalAuthGuard) // Todavía sobrescribimos el guard para que el test funcione
+      .useValue(mockLocalAuthGuard)
       .compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -49,14 +46,12 @@ describe('AuthController', () => {
 
     jest.clearAllMocks();
 
-    // Re-implementar canActivate después de clearAllMocks
     (mockLocalAuthGuard.canActivate as jest.Mock).mockImplementation((context: ExecutionContext) => {
       const request = context.switchToHttp().getRequest();
       request.user = expectedUser;
       return true;
     });
 
-    // Configurar validateUser del AuthService por si el guard lo usara (aunque aquí el mock de guard lo evita)
     (mockAuthService.validateUser as jest.Mock).mockResolvedValue(expectedUser);
   });
 
@@ -72,20 +67,13 @@ describe('AuthController', () => {
       };
       (mockAuthService.login as jest.Mock).mockResolvedValue(expectedLoginResult);
 
-      // Creamos un mock del objeto Request que se pasaría al controlador.
-      // Crucialmente, necesitamos asegurarnos de que `req.user` esté definido aquí,
-      // ya que el controlador lo espera. En un escenario real, el guard lo pondría.
-      // Aquí lo hacemos explícito para el test, asumiendo que el guard hizo su trabajo.
       const mockRequestWithUser = { user: expectedUser };
 
-      // Llamamos al método del controlador
-      const result = await controller.login(mockRequestWithUser); // Pasamos el request con el usuario ya "adjunto"
+      const result = await controller.login(mockRequestWithUser);
 
-      // 1. Verificar que AuthService.login fue llamado con el usuario correcto.
-      expect(mockAuthService.login).toHaveBeenCalledTimes(1); // Añadido para rigor
+      expect(mockAuthService.login).toHaveBeenCalledTimes(1); 
       expect(mockAuthService.login).toHaveBeenCalledWith(expectedUser);
 
-      // 2. Verificar que el controlador devuelve el resultado esperado.
       expect(result).toEqual(expectedLoginResult);
     });
   });

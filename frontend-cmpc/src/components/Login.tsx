@@ -1,4 +1,4 @@
-// src/components/Login/Login.tsx
+ 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -20,16 +20,16 @@ const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        // Login handled by AuthContext, which navigates to /books
-        // No need to navigate here directly, AuthContext handles it.
+ 
+ 
       } else {
-        // If login returns false, it means there was an error,
-        // and AuthContext should already show an alert or handle it.
+ 
+ 
         setErrorMessage('Credenciales inválidas o error de red.'); // Generic error if no specific message from AuthContext
       }
     } catch (error) {
-      // This catch block might not be hit if AuthContext handles errors,
-      // but it's good practice for robustness.
+ 
+ 
       console.error('Error during login attempt:', error);
       setErrorMessage('Ocurrió un error inesperado al intentar iniciar sesión.');
     } finally {

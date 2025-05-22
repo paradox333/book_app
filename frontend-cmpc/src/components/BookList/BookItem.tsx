@@ -1,4 +1,4 @@
-// src/components/BookList/BookItem.tsx
+ 
 import React from 'react';
 import type { Book } from '../../types/Book';
 
@@ -6,7 +6,7 @@ interface BookItemProps {
   book: Book;
   onView: () => void;
   onEdit: () => void;
-  // onDelete: () => void; // Si agregas funcionalidad de eliminar
+ 
 }
 
 const BookItem: React.FC<BookItemProps> = ({ book, onView, onEdit }) => {

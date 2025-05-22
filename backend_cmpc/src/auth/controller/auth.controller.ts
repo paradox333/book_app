@@ -26,7 +26,7 @@ export class AuthController {
   }
 
   @Get('test/protected')
-  @UseGuards(JwtAuthGuard) // Apply the JwtAuthGuard here
+  @UseGuards(JwtAuthGuard)
   getProtectedData() {
     return { message: 'This is protected data!' };
   }

@@ -1,4 +1,3 @@
-// src/auth/guards/jwt-auth.guard.integration.spec.ts
 
 import {
   Controller,
@@ -12,12 +11,9 @@ import * as request from 'supertest';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
-// Import your actual application components
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 
-// A dummy Controller to apply the guard to
 @Controller('test-jwt')
 class TestJwtController {
   @Get('protected')
@@ -42,7 +38,6 @@ describe('JwtAuthGuard (Integration)', () => {
         PassportModule,
         ConfigModule.forRoot({
           isGlobal: true,
-          // THIS IS THE SECRET YOUR TESTS WILL USE FOR BOTH SIGNING AND VERIFYING
           load: [() => ({ JWT_SECRET: 'superSecretKeyForTesting' })],
         }),
         JwtModule.registerAsync({
@@ -57,7 +52,7 @@ describe('JwtAuthGuard (Integration)', () => {
       controllers: [TestJwtController],
       providers: [
         JwtAuthGuard,
-        JwtStrategy, // JwtStrategy now receives ConfigService via Nest's DI
+        JwtStrategy, 
         {
           provide: 'WINSTON_MODULE_PROVIDER',
           useValue: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
@@ -103,9 +98,6 @@ describe('JwtAuthGuard (Integration)', () => {
       });
   });
 
-  // Re-adjusting this test name, as the "user not found by strategy" scenario
-  // isn't explicitly tested if your strategy only returns the payload.
-  // It tests that a valid token works, as the strategy will always return the payload.
   it('should allow access to a protected route with a valid token', async () => {
     const payload = { sub: 1, email: 'user@example.com' };
     const token = jwtService.sign(payload);
@@ -113,13 +105,10 @@ describe('JwtAuthGuard (Integration)', () => {
     await request(app.getHttpServer())
       .get('/test-jwt/protected')
       .set('Authorization', `Bearer ${token}`)
-      .expect(200) // Expect 200 now that secret matches
+      .expect(200)
       .expect({ message: 'This is protected data!' });
   });
 
-  // This test now essentially duplicates the one above, but we'll keep it for clarity
-  // that a "valid user" (in terms of a valid token leading to successful strategy execution)
-  // allows access.
   it('should allow access to a protected route with a valid token and valid user', async () => {
     const user = { id: 1, email: 'user@example.com', name: 'Test User' };
     const payload = { sub: user.id, email: user.email };
@@ -128,7 +117,7 @@ describe('JwtAuthGuard (Integration)', () => {
     await request(app.getHttpServer())
       .get('/test-jwt/protected')
       .set('Authorization', `Bearer ${token}`)
-      .expect(200) // Expect 200 now that secret matches
+      .expect(200)
       .expect({ message: 'This is protected data!' });
   });
 });

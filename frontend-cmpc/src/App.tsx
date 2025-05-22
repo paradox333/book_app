@@ -1,8 +1,8 @@
-// src/App.tsx
+ 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import AuthProvider, { useAuth } from './context/AuthContext';
-// import Register from './components/Register/Register'; // <-- ELIMINA O COMENTA ESTA LÍNEA
+ 
 
 import BookList from './components/BookList/BookList';
 import BookForm from './components/BookForm/BookForm';
@@ -10,7 +10,7 @@ import BookDetails from './components/BookDetails/BookDetails';
 import './App.css';
 import Login from './components/Login';
 
-// Componente de enrutamiento protegido
+ 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, isLoading } = useAuth();
 

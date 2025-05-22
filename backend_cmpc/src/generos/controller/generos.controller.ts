@@ -10,7 +10,7 @@ export class GenerosController {
   constructor(private readonly generosService: GenerosService) {}
 
   @Post()
-  @HttpCode(HttpStatus.CREATED) // Devuelve un código 201 Created si la operación es exitosa
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createGeneroDto: CreateGeneroDto) {
     const genero = await this.generosService.create(createGeneroDto);
     return genero;

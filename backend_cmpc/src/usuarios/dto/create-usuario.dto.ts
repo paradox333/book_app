@@ -1,4 +1,3 @@
-// src/usuarios/dto/create-usuario.dto.ts
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class CreateUsuarioDto {
@@ -7,8 +6,8 @@ export class CreateUsuarioDto {
 
   @IsNotEmpty()
   @MinLength(6)
-  password: string; // se convertirá en hash luego
-
+  password: string; 
+  
   @IsNotEmpty()
   nombre: string;
 }

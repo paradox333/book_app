@@ -46,62 +46,20 @@ export class LibrosService {
       pagination: { page, limit },
     });
 
-    // === MODIFICACIÓN CLAVE AQUÍ ===
-    // Necesitas pasar las opciones 'include' a la consulta de Sequelize.
-    // Si 'paginate' acepta un tercer argumento para opciones de consulta, úsalo.
-    // De lo contrario, deberías hacer el findAll directamente aquí.
-
-    // Opción 1: Si `paginate` acepta opciones de consulta
+    
     const paginationOptions = {
       include: [
-        { model: Autor, attributes: ['id', 'nombre'], as: 'autor' }, // Incluye el autor, solo el id y nombre
-        { model: Editorial, attributes: ['id', 'nombre'], as: 'editorial' }, // Incluye la editorial, solo el id y nombre
-        { model: Genero, attributes: ['id', 'nombre'], as: 'genero' },     // Incluye el género, solo el id y nombre
+        { model: Autor, attributes: ['id', 'nombre'], as: 'autor' }, 
+        { model: Editorial, attributes: ['id', 'nombre'], as: 'editorial' }, 
+        { model: Genero, attributes: ['id', 'nombre'], as: 'genero' },
       ],
-      // Aquí puedes añadir más opciones de filtrado, ordenamiento si las manejas en findAll
-      // order: [['titulo', 'ASC']], // Ejemplo de ordenamiento por defecto
+     
     };
 
-    // Asegúrate de que tu función `paginate` pueda manejar estas opciones
     const paginatedResult: PaginatedResult<Libro> = await paginate(this.libroModel, page, limit, paginationOptions);
 
 
     const transformedData = paginatedResult.data.map(libro => ({
-      id: String(libro.id), // Asegúrate de que sea string si el frontend lo espera
-      titulo: libro.titulo,
-      autor: libro.autor ? libro.autor.nombre : null, // Extrae el nombre del autor
-      editorial: libro.editorial ? libro.editorial.nombre : null, // Extrae el nombre de la editorial
-      genero: libro.genero ? libro.genero.nombre : null, // Extrae el nombre del género
-      precio: Number(libro.precio), // Asegúrate de que sea un número (precio es Decimal en DB)
-      disponible: libro.disponible,
-      imagenUrl: libro.imagenUrl,
-      deletedAt: libro.deletedAt ? libro.deletedAt.toISOString() : null,
-      // Añade aquí otros campos como 'descripcion' o 'añoPublicacion' si existen en tu modelo Libro
-      // y quieres devolverlos.
-    }));
-
-    return {
-      data: transformedData,
-      total: paginatedResult.meta.total,
-      page: paginatedResult.meta.page,
-      limit: paginatedResult.meta.limit,
-    };
-    // === FIN DE LA MODIFICACIÓN ===
-
-    // Opción 2: Si `paginate` no es flexible, haz la consulta directamente
-    /*
-    const { rows: libros, count: total } = await this.libroModel.findAndCountAll({
-      limit: Number(limit),
-      offset: (Number(page) - 1) * Number(limit),
-      include: [
-        { model: Autor, attributes: ['id', 'nombre'], as: 'autor' },
-        { model: Editorial, attributes: ['id', 'nombre'], as: 'editorial' },
-        { model: Genero, attributes: ['id', 'nombre'], as: 'genero' },
-      ],
-      // Aquí podrías añadir order, where, etc.
-    });
-
-    const transformedLibros = libros.map(libro => ({
       id: String(libro.id),
       titulo: libro.titulo,
       autor: libro.autor ? libro.autor.nombre : null,
@@ -111,17 +69,15 @@ export class LibrosService {
       disponible: libro.disponible,
       imagenUrl: libro.imagenUrl,
       deletedAt: libro.deletedAt ? libro.deletedAt.toISOString() : null,
-      // ... otros campos
     }));
 
     return {
-      data: transformedLibros,
-      total: total,
-      page: Number(page),
-      limit: Number(limit),
-      lastPage: Math.ceil(total / Number(limit)),
+      data: transformedData,
+      total: paginatedResult.meta.total,
+      page: paginatedResult.meta.page,
+      limit: paginatedResult.meta.limit,
     };
-    */
+    
   }
 
   async findOne(id: number): Promise<Libro> {
