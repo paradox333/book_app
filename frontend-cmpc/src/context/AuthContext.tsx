@@ -3,9 +3,10 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 if (!API_BASE_URL) {
+  console.log(API_BASE_URL)
   console.error('Error: La variable de entorno API_BASE_URL no está definida.');
 }
 

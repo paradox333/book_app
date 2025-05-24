@@ -7,7 +7,7 @@ import type { Book, LibroResponse } from '../../types/Book'; // Asegúrate de qu
 import ImageUpload from './ImageUpload'; // Componente para cargar imagen
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
  
 interface LibroFormValues {

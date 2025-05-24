@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import debounce from 'lodash.debounce';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL;
-const API_DEFAULT_BOOK_IMAGE = import.meta.env.DEFAULT_BOOK_IMAGE;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_DEFAULT_BOOK_IMAGE = import.meta.env.VITE_DEFAULT_BOOK_IMAGE;
 
 if (!API_BASE_URL) {
   console.error('Error: La variable de entorno API_BASE_URL no está definida.');
