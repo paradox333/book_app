@@ -10,6 +10,8 @@ import {
 import { paginate } from 'src/utils/paginate';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class EditorialesService {
@@ -19,10 +21,17 @@ export class EditorialesService {
 
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+
+    private readonly sequelize: Sequelize,
   ) {}
 
-  async create(createEditorialDto: CreateEditorialDto): Promise<Editorial> {
-    const editorial = await this.editorialModel.create(createEditorialDto);
+  async create(
+    createEditorialDto: CreateEditorialDto,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Editorial> {
+    const editorial = await this.editorialModel.create(createEditorialDto, {
+      transaction: options.transaction,
+    });
 
     this.logger.info('Editorial creada', {
       context: EditorialesService.name,
@@ -44,8 +53,14 @@ export class EditorialesService {
     return paginate(this.editorialModel, page, limit);
   }
 
-  async findOne(id: number): Promise<Editorial> {
-    const editorial = await this.editorialModel.findByPk(id);
+  async findOne(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Editorial> {
+    const editorial = await this.editorialModel.findByPk(id, {
+      transaction: options.transaction,
+    });
+
     if (!editorial) {
       this.logger.warn('Editorial no encontrada', {
         context: EditorialesService.name,
@@ -59,9 +74,14 @@ export class EditorialesService {
     return editorial;
   }
 
-  async update(id: number, dto: UpdateEditorialDto): Promise<Editorial> {
-    const editorial = await this.findOne(id);
-    await editorial.update(dto);
+  async update(
+    id: number,
+    dto: UpdateEditorialDto,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Editorial> {
+    const editorial = await this.findOne(id, { transaction: options.transaction });
+
+    await editorial.update(dto, { transaction: options.transaction });
 
     this.logger.info('Editorial actualizada', {
       context: EditorialesService.name,
@@ -73,9 +93,12 @@ export class EditorialesService {
     return editorial;
   }
 
-  async remove(id: number): Promise<void> {
-    const editorial = await this.findOne(id);
-    await editorial.destroy();
+  async remove(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<void> {
+    const editorial = await this.findOne(id, { transaction: options.transaction });
+    await editorial.destroy({ transaction: options.transaction });
 
     this.logger.info('Editorial eliminada', {
       context: EditorialesService.name,
@@ -84,10 +107,14 @@ export class EditorialesService {
     });
   }
 
-  async restore(id: number): Promise<Editorial> {
+  async restore(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Editorial> {
     const editorial = await this.editorialModel.findOne({
       where: { id },
       paranoid: false,
+      transaction: options.transaction,
     });
 
     if (!editorial) {
@@ -100,7 +127,10 @@ export class EditorialesService {
       throw new NotFoundException(`Editorial con ID ${id} no encontrada`);
     }
 
-    await this.editorialModel.restore({ where: { id } });
+    await this.editorialModel.restore({
+      where: { id },
+      transaction: options.transaction,
+    });
 
     this.logger.info('Editorial restaurada', {
       context: EditorialesService.name,
@@ -108,6 +138,6 @@ export class EditorialesService {
       id,
     });
 
-    return this.editorialModel.findByPk(id);
+    return this.editorialModel.findByPk(id, { transaction: options.transaction });
   }
 }

@@ -7,6 +7,7 @@ import {
   AutoIncrement,
   Unique,
   DeletedAt,
+  Index,
 } from 'sequelize-typescript';
 
 @Table({
@@ -22,6 +23,7 @@ export class Usuario extends Model<Usuario> {
   @Column(DataType.INTEGER)
   id: number;
 
+  @Index
   @Unique
   @Column(DataType.STRING)
   email: string;
@@ -29,6 +31,7 @@ export class Usuario extends Model<Usuario> {
   @Column({ field: 'password_hash', type: DataType.TEXT})
   passwordHash: string;
 
+  @Index
   @Column(DataType.STRING(100))
   nombre: string;
 

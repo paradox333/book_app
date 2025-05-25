@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   AutoIncrement,
   DeletedAt,
+  Index
 } from 'sequelize-typescript';
 
 @Table({
@@ -21,6 +22,7 @@ export class Autor extends Model<Autor> {
   @Column(DataType.INTEGER)
   id: number;
 
+  @Index
   @Column({
     type: DataType.STRING(255),
     allowNull: false,

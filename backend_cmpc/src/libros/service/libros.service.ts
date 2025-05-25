@@ -15,6 +15,8 @@ import { Autor } from 'src/autores/model/autores.model';
 import { Genero } from 'src/generos/model/genero.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class LibrosService {
@@ -24,19 +26,23 @@ export class LibrosService {
 
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+
+    private readonly sequelize: Sequelize,
   ) {}
 
-  async create(createLibroDto: CreateLibroDto): Promise<Libro> {
-    const libro = await this.libroModel.create(createLibroDto);
+    async create(createLibroDto: CreateLibroDto): Promise<Libro> {
+    return this.sequelize.transaction(async (transaction: Transaction) => {
+      const libro = await this.libroModel.create(createLibroDto, { transaction });
 
-    this.logger.info('Libro creado', {
-      context: 'LibrosService',
-      operation: 'create',
-      model: 'Libro',
-      data: { id: libro.id, titulo: libro.titulo },
+      this.logger.info('Libro creado', {
+        context: 'LibrosService',
+        operation: 'create',
+        model: 'Libro',
+        data: { id: libro.id, titulo: libro.titulo },
+      });
+
+      return libro;
     });
-
-    return libro;
   }
 
   async findAll(page = 1, limit = 10) {
@@ -46,18 +52,15 @@ export class LibrosService {
       pagination: { page, limit },
     });
 
-    
     const paginationOptions = {
       include: [
-        { model: Autor, attributes: ['id', 'nombre'], as: 'autor' }, 
-        { model: Editorial, attributes: ['id', 'nombre'], as: 'editorial' }, 
+        { model: Autor, attributes: ['id', 'nombre'], as: 'autor' },
+        { model: Editorial, attributes: ['id', 'nombre'], as: 'editorial' },
         { model: Genero, attributes: ['id', 'nombre'], as: 'genero' },
       ],
-     
     };
 
     const paginatedResult: PaginatedResult<Libro> = await paginate(this.libroModel, page, limit, paginationOptions);
-
 
     const transformedData = paginatedResult.data.map(libro => ({
       id: String(libro.id),
@@ -77,7 +80,6 @@ export class LibrosService {
       page: paginatedResult.meta.page,
       limit: paginatedResult.meta.limit,
     };
-    
   }
 
   async findOne(id: number): Promise<Libro> {
@@ -94,55 +96,94 @@ export class LibrosService {
     return libro;
   }
 
-  async update(id: number, updateLibroDto: UpdateLibroDto): Promise<Libro> {
-    const libro = await this.findOne(id);
-    await libro.update(updateLibroDto);
+   async update(id: number, updateLibroDto: UpdateLibroDto): Promise<Libro> {
+    return this.sequelize.transaction(async (transaction: Transaction) => {
+      const libro = await this.libroModel.findByPk(id, { transaction });
 
-    this.logger.info('Libro actualizado', {
-      context: 'LibrosService',
-      operation: 'update',
-      id,
-      data: updateLibroDto,
+      if (!libro) {
+        this.logger.warn('Libro no encontrado para actualizar', {
+          context: 'LibrosService',
+          operation: 'update',
+          id,
+        });
+        throw new NotFoundException(`Libro con ID ${id} no encontrado`);
+      }
+
+      await libro.update(updateLibroDto, { transaction });
+
+      this.logger.info('Libro actualizado', {
+        context: 'LibrosService',
+        operation: 'update',
+        id,
+        data: updateLibroDto,
+      });
+
+      return libro;
     });
-
-    return libro;
   }
 
   async remove(id: number): Promise<void> {
-    const libro = await this.findOne(id);
-    await libro.destroy();
+    return this.sequelize.transaction(async (transaction: Transaction) => {
+      const libro = await this.libroModel.findByPk(id, { transaction });
 
-    this.logger.info('Libro eliminado', {
-      context: 'LibrosService',
-      operation: 'remove',
-      id,
+      if (!libro) {
+        this.logger.warn('Libro no encontrado para eliminar', {
+          context: 'LibrosService',
+          operation: 'remove',
+          id,
+        });
+        throw new NotFoundException(`Libro con ID ${id} no encontrado`);
+      }
+
+      await libro.destroy({ transaction });
+
+      this.logger.info('Libro eliminado', {
+        context: 'LibrosService',
+        operation: 'remove',
+        id,
+      });
     });
   }
 
   async restore(id: number): Promise<Libro> {
-    const libro = await this.libroModel.findOne({
-      where: { id },
-      paranoid: false,
-    });
+    const transaction = await this.sequelize.transaction();
 
-    if (!libro) {
-      this.logger.warn('Intento de restaurar libro inexistente', {
+    try {
+      const libro = await this.libroModel.findOne({
+        where: { id },
+        paranoid: false,
+      });
+
+      if (!libro) {
+        this.logger.warn('Intento de restaurar libro inexistente', {
+          context: 'LibrosService',
+          operation: 'restore',
+          id,
+        });
+        throw new NotFoundException(`Libro con ID ${id} no encontrado`);
+      }
+
+      await this.libroModel.restore({ where: { id }, transaction });
+
+      await transaction.commit();
+
+      this.logger.info('Libro restaurado', {
         context: 'LibrosService',
         operation: 'restore',
         id,
       });
-      throw new NotFoundException(`Libro con ID ${id} no encontrado`);
+
+      return this.libroModel.findByPk(id);
+    } catch (error) {
+      await transaction.rollback();
+      this.logger.error('Error al restaurar libro', {
+        context: 'LibrosService',
+        operation: 'restore',
+        id,
+        error: error.message,
+      });
+      throw error;
     }
-
-    await this.libroModel.restore({ where: { id } });
-
-    this.logger.info('Libro restaurado', {
-      context: 'LibrosService',
-      operation: 'restore',
-      id,
-    });
-
-    return this.libroModel.findByPk(id);
   }
 
   async export(res: Response) {

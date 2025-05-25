@@ -12,6 +12,8 @@ import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { paginate } from 'src/utils/paginate';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class UsuariosService {
@@ -23,12 +25,18 @@ export class UsuariosService {
 
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+
+    private readonly sequelize: Sequelize,
   ) {}
 
-  async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+  async create(
+    createUsuarioDto: CreateUsuarioDto,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Usuario> {
     const exists = await this.usuarioModel.findOne({
       where: { email: createUsuarioDto.email },
       paranoid: false,
+      transaction: options.transaction,
     });
 
     if (exists) {
@@ -42,11 +50,14 @@ export class UsuariosService {
 
     const passwordHash = await bcrypt.hash(createUsuarioDto.password, this.saltRounds);
 
-    const usuario = await this.usuarioModel.create({
-      email: createUsuarioDto.email,
-      passwordHash,
-      nombre: createUsuarioDto.nombre,
-    });
+    const usuario = await this.usuarioModel.create(
+      {
+        email: createUsuarioDto.email,
+        passwordHash,
+        nombre: createUsuarioDto.nombre,
+      },
+      { transaction: options.transaction },
+    );
 
     this.logger.info('Usuario creado', {
       context: 'UsuariosService',
@@ -68,8 +79,13 @@ export class UsuariosService {
     return paginate(this.usuarioModel, page, limit);
   }
 
-  async findOne(id: number): Promise<Usuario> {
-    const user = await this.usuarioModel.findByPk(id);
+  async findOne(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Usuario> {
+    const user = await this.usuarioModel.findByPk(id, {
+      transaction: options.transaction,
+    });
 
     if (!user) {
       this.logger.warn('Usuario no encontrado', {
@@ -83,12 +99,17 @@ export class UsuariosService {
     return user;
   }
 
-  async update(id: number, updateUsuarioDto: UpdateUsuarioDto): Promise<Usuario> {
-    const user = await this.findOne(id);
+  async update(
+    id: number,
+    updateUsuarioDto: UpdateUsuarioDto,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Usuario> {
+    const user = await this.findOne(id, { transaction: options.transaction });
 
     if (updateUsuarioDto.email && updateUsuarioDto.email !== user.email) {
       const emailExists = await this.usuarioModel.findOne({
         where: { email: updateUsuarioDto.email },
+        transaction: options.transaction,
       });
 
       if (emailExists) {
@@ -111,11 +132,14 @@ export class UsuariosService {
       delete (updateUsuarioDto as any).password;
     }
 
-    await user.update({
-      email: updateUsuarioDto.email ?? user.email,
-      passwordHash: updateUsuarioDto['passwordHash'] ?? user.passwordHash,
-      nombre: updateUsuarioDto.nombre ?? user.nombre,
-    });
+    await user.update(
+      {
+        email: updateUsuarioDto.email ?? user.email,
+        passwordHash: updateUsuarioDto['passwordHash'] ?? user.passwordHash,
+        nombre: updateUsuarioDto.nombre ?? user.nombre,
+      },
+      { transaction: options.transaction },
+    );
 
     this.logger.info('Usuario actualizado', {
       context: 'UsuariosService',
@@ -126,9 +150,12 @@ export class UsuariosService {
     return user;
   }
 
-  async remove(id: number): Promise<void> {
-    const user = await this.findOne(id);
-    await user.destroy();
+  async remove(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<void> {
+    const user = await this.findOne(id, { transaction: options.transaction });
+    await user.destroy({ transaction: options.transaction });
 
     this.logger.info('Usuario eliminado', {
       context: 'UsuariosService',
@@ -137,10 +164,14 @@ export class UsuariosService {
     });
   }
 
-  async restore(id: number) {
+  async restore(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Usuario> {
     const user = await this.usuarioModel.findOne({
       where: { id },
       paranoid: false,
+      transaction: options.transaction,
     });
 
     if (!user) {
@@ -152,7 +183,10 @@ export class UsuariosService {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.usuarioModel.restore({ where: { id } });
+    await this.usuarioModel.restore({
+      where: { id },
+      transaction: options.transaction,
+    });
 
     this.logger.info('Usuario restaurado', {
       context: 'UsuariosService',
@@ -160,20 +194,26 @@ export class UsuariosService {
       id,
     });
 
-    return this.usuarioModel.findByPk(id);
+    return this.usuarioModel.findByPk(id, { transaction: options.transaction });
   }
 
-  async findByEmail(email: string, includeDeleted = false): Promise<Usuario | null> {
+  async findByEmail(
+    email: string,
+    includeDeleted = false,
+    options: { transaction?: Transaction } = {},
+  ): Promise<Usuario | null> {
     this.logger.info('Buscando usuario por email', {
       context: 'UsuariosService',
       operation: 'findByEmail',
       email,
       includeDeleted,
+      usingTransaction: !!options.transaction,
     });
 
     return this.usuarioModel.findOne({
       where: { email },
       paranoid: !includeDeleted,
+      transaction: options.transaction,
     });
   }
 }

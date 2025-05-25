@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { ConfigService } from '@nestjs/config';
+import { Sequelize } from 'sequelize-typescript';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -34,5 +34,8 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 Server running on http://localhost:${port}`);
 
+  const sequelize = app.get(Sequelize);
+  await sequelize.sync({ alter: true });
 }
+
 bootstrap();

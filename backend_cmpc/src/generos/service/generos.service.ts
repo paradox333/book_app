@@ -10,6 +10,8 @@ import { Genero } from '../model/genero.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { Sequelize } from 'sequelize-typescript';
+import { Transaction } from 'sequelize';
 
 @Injectable()
 export class GenerosService {
@@ -19,14 +21,20 @@ export class GenerosService {
 
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+
+    private readonly sequelize: Sequelize,
   ) {}
 
-  async create(createGeneroDto: CreateGeneroDto) {
+  async create(
+    createGeneroDto: CreateGeneroDto,
+    options: { transaction?: Transaction } = {},
+  ) {
     const { nombre } = createGeneroDto;
     const nombreNormalizado = nombre.toLowerCase();
 
     const existingGenero = await this.generoModel.findOne({
       where: { nombre: nombreNormalizado },
+      transaction: options.transaction,
     });
 
     if (existingGenero) {
@@ -38,7 +46,10 @@ export class GenerosService {
       throw new ConflictException(`El género con nombre "${nombre}" ya existe.`);
     }
 
-    const newGenero = await this.generoModel.create({ nombre });
+    const newGenero = await this.generoModel.create(
+      { nombre },
+      { transaction: options.transaction },
+    );
 
     this.logger.info(`Género creado: ${nombre}`, {
       context: GenerosService.name,
@@ -63,8 +74,13 @@ export class GenerosService {
     return generos;
   }
 
-  async findOne(id: number) {
-    const genero = await this.generoModel.findByPk(id);
+  async findOne(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ) {
+    const genero = await this.generoModel.findByPk(id, {
+      transaction: options.transaction,
+    });
 
     if (!genero) {
       this.logger.warn(`Género con ID ${id} no encontrado`, {
@@ -84,19 +100,16 @@ export class GenerosService {
     return genero;
   }
 
-  async update(id: number, updateGeneroDto: UpdateGeneroDto) {
-    const genero = await this.generoModel.findByPk(id);
+  async update(
+    id: number,
+    updateGeneroDto: UpdateGeneroDto,
+    options: { transaction?: Transaction } = {},
+  ) {
+    const genero = await this.findOne(id, { transaction: options.transaction });
 
-    if (!genero) {
-      this.logger.warn(`Género con ID ${id} no encontrado para actualizar`, {
-        context: GenerosService.name,
-        operation: 'update',
-        model: 'Genero',
-      });
-      throw new NotFoundException(`Género con ID ${id} no encontrado`);
-    }
-
-    await genero.update(updateGeneroDto);
+    await genero.update(updateGeneroDto, {
+      transaction: options.transaction,
+    });
 
     this.logger.info(`Género actualizado: ${genero.id}`, {
       context: GenerosService.name,
@@ -108,19 +121,13 @@ export class GenerosService {
     return genero;
   }
 
-  async remove(id: number): Promise<void> {
-    const genero = await this.generoModel.findByPk(id);
+  async remove(
+    id: number,
+    options: { transaction?: Transaction } = {},
+  ): Promise<void> {
+    const genero = await this.findOne(id, { transaction: options.transaction });
 
-    if (!genero) {
-      this.logger.warn(`Género con ID ${id} no encontrado para eliminación`, {
-        context: GenerosService.name,
-        operation: 'remove',
-        model: 'Genero',
-      });
-      throw new NotFoundException(`Género con ID ${id} no encontrado`);
-    }
-
-    await genero.destroy();
+    await genero.destroy({ transaction: options.transaction });
 
     this.logger.info(`Género eliminado: ${id}`, {
       context: GenerosService.name,

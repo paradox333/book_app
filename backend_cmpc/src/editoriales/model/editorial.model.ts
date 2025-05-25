@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, DeletedAt } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, DeletedAt, Index } from 'sequelize-typescript';
 
 @Table({
   tableName: 'editoriales',
@@ -13,6 +13,7 @@ export class Editorial extends Model<Editorial> {
   @Column(DataType.INTEGER)
   id: number;
 
+  @Index
   @Column({
     type: DataType.STRING(255),
     allowNull: false,
