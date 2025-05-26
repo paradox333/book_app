@@ -30,22 +30,61 @@ Asegúrate de tener instalado lo siguiente:
     yarn install
     ```
 3.  **Configura las variables de entorno**:
-    Crea un archivo `.env` en la raíz del directorio `backend` con la configuración de tu base de datos y JWT. Ejemplo:
+    Crea un archivo `.env` en la raíz del directorio `backend_cmpc` con la configuración de tu base de datos y JWT. Ejemplo:
     ```env
-    # Database
+    # Database ejemplo de definicion
+    DB_NAME=postgres
     DB_HOST=localhost
     DB_PORT=5432
-    DB_USERNAME=your_username
-    DB_PASSWORD=your_password
-    DB_DATABASE=your_database_name
+    DB_USERNAME=admin
+    DB_PASSWORD=admin
+    DB_SCHEMA=cmpc
 
     # JWT
     JWT_SECRET=superSecretKeyDeNestJS
     JWT_EXPIRES_IN=1h
+
+    # Config
+    APP_PORT=3000
+    FRONT_CORS_PORT=3003
     ```
     Asegúrate de que `DB_DATABASE` exista en tu instancia de PostgreSQL o crea una nueva.
 
-4.  **Ejecuta las migraciones (y seeders, si tienes)**:
+    Es importante que los valores definidos en las variables de base de datos sean las mismas definidas en el docker-compose
+    ```yml
+    backend_cmpc:
+    build: ./backend_cmpc
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASS: admin
+      DB_NAME: postgres
+      DB_SCHEMA: cmpc
+    db:
+    image: postgres:15
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ```
+
+    Crea un archivo `.env` en la raíz del directorio `frontend-cmpc` con el host del backend, el puerto del frontend y la url de la imagen por defecto. Ejemplo:
+    ```env
+    VITE_API_BASE_URL=http://localhost:3000
+    VITE_PORT=3003
+    VITE_DEFAULT_BOOK_IMAGE=/public/vite.svg
+    ```
+    Se recomienda utilizar los mismo valores proporcionados
+
+5.  **Ejecuta las migraciones (y seeders, si tienes)**:
     Si tu proyecto usa migraciones de Sequelize para configurar la base de datos, ejecútalas. Por ejemplo:
     ```bash
     # Si usas sequelize-cli o comandos similares para migraciones
@@ -55,7 +94,7 @@ Asegúrate de tener instalado lo siguiente:
     ```
     *(**Nota**: Los comandos exactos de migración y seeder pueden variar según cómo los hayas configurado en tu proyecto NestJS/Sequelize.)*
 
-5.  **Levanta el servidor backend**:
+6.  **Levanta el servidor backend**:
     ```bash
     yarn start:dev
     ```
