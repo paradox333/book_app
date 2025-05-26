@@ -15,7 +15,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay]); // Solo re-ejecuta si el valor o el retraso cambian
+  }, [value, delay]);
 
   return debouncedValue;
 }

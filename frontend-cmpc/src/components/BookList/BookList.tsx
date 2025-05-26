@@ -1,210 +1,46 @@
- 
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+// src/components/BookList.tsx
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import debounce from 'lodash.debounce';
+import useBookList from '../../hooks/useBookList';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_DEFAULT_BOOK_IMAGE = import.meta.env.VITE_DEFAULT_BOOK_IMAGE;
 
-if (!API_BASE_URL) {
-  console.error('Error: La variable de entorno API_BASE_URL no está definida.');
-}
-
-interface Libro {
-  id: string;
-  titulo: string;
-  autor: string;
-  genero: string;
-  editorial: string;
-  disponible: boolean;
-  imagenUrl?: string;
-  deletedAt: string;
-}
-
-interface PaginatedBooksResponse {
-  data: Libro[];
-  total: number;
-  page: number;
-  lastPage: number;
-  limit: number;
-}
-
- 
- 
-interface FilterOption {
-  id: number; // O string, dependiendo de tu backend si es UUID o numérico
-  nombre: string;
-  deletedAt?: string | null; // Opcional si existe
-}
 
 const BookList: React.FC = () => {
-  const { token } = useAuth();
-  const [books, setBooks] = useState<Libro[]>([]);
-  const [loadingBooks, setLoadingBooks] = useState<boolean>(true);
-  const [errorBooks, setErrorBooks] = useState<string | null>(null);
+  const {
+    token,
+    loadingBooks,
+    books,
+    errorBooks,
+    handleSearchChange,
+    genreFilter,
+    setGenreFilter,
+    setPage,
+    loadingFilters,
+    errorFilters,
+    fetchedGenres,
+    editorialFilter,
+    setEditorialFilter,
+    fetchedEditorials,
+    authorFilter,
+    setAuthorFilter,
+    fetchedAuthors,
+    availabilityFilter,
+    setAvailabilityFilter,
+    sortBy,
+    page,
+    lastPage,
+    sortOrder,
+    handleSortChange,
+    handleDeleteBook,
+    handlePageChange,
+    limit,
+    handleLimitChange
+  } = useBookList();
 
- 
-  const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
-  const [totalBooks, setTotalBooks] = useState<number>(0);
-  const [lastPage, setLastPage] = useState<number>(1);
+  const frontendHost = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+  console.log(frontendHost+API_DEFAULT_BOOK_IMAGE)
 
- 
-  const [search, setSearch] = useState<string>('');
-  const [genreFilter, setGenreFilter] = useState<string>('');
-  const [editorialFilter, setEditorialFilter] = useState<string>('');
-  const [authorFilter, setAuthorFilter] = useState<string>('');
-  const [availabilityFilter, setAvailabilityFilter] = useState<string>('');
-
- 
-  const [sortBy, setSortBy] = useState<string>('title');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
- 
-  const [fetchedGenres, setFetchedGenres] = useState<FilterOption[]>([]);
-  const [fetchedEditorials, setFetchedEditorials] = useState<FilterOption[]>([]);
-  const [fetchedAuthors, setFetchedAuthors] = useState<FilterOption[]>([]);
-  const [loadingFilters, setLoadingFilters] = useState<boolean>(true);
-  const [errorFilters, setErrorFilters] = useState<string | null>(null);
-
- 
-  const fetchBooks = useCallback(async () => {
-    if (!token) {
-      setLoadingBooks(false);
-      setErrorBooks('No autenticado. Por favor, inicie sesión.');
-      return;
-    }
-
-    setLoadingBooks(true);
-    setErrorBooks(null);
-
-    try {
-      const params = {
-        pages: page,
-        limit,
-        search: search || undefined,
-        genre: genreFilter || undefined,
-        editorial: editorialFilter || undefined,
-        author: authorFilter || undefined,
-        available: availabilityFilter !== '' ? availabilityFilter : undefined,
-        sortBy: sortBy || undefined,
-        sortOrder: sortOrder || undefined,
-      };
-
-      const response = await axios.get<PaginatedBooksResponse>(`${API_BASE_URL}/libros`, { params });
-      console.log(response)
-      setBooks(response.data.data);
-      setTotalBooks(response.data.total);
-      setPage(response.data.page);
-      setLastPage(response.data.lastPage);
-      setLimit(response.data.limit);
-    } catch (err: any) {
-      console.error('Error al obtener libros:', err.response?.data?.message || err.message);
-      setErrorBooks('Error al cargar los libros. Inténtelo de nuevo.');
-    } finally {
-      setLoadingBooks(false);
-    }
-  }, [
-    token, page, limit, search, genreFilter, editorialFilter,
-    authorFilter, availabilityFilter, sortBy, sortOrder
-  ]);
-
- 
-  useEffect(() => {
-    const fetchFilterData = async () => {
-      if (!token) {
-        setLoadingFilters(false);
-        return;
-      }
-      setLoadingFilters(true);
-      setErrorFilters(null);
-      try {
-        const [genresRes, editorialsRes, authorsRes] = await Promise.all([
-          axios.get<any>(`${API_BASE_URL}/generos`),
-          axios.get<any>(`${API_BASE_URL}/editoriales`),
-          axios.get<any>(`${API_BASE_URL}/autores`),
-        ]);
-
- 
-
- 
-        setFetchedGenres(genresRes.data || []);
-
- 
-        setFetchedEditorials(editorialsRes.data.data || []);
-        setFetchedAuthors(authorsRes.data.data || []);
-
-      } catch (err: any) {
-        console.error('Error al obtener datos de filtros:', err.response?.data?.message || err.message);
-        setErrorFilters('Error al cargar opciones de filtro. Inténtelo de nuevo.');
-        setFetchedGenres([]);
-        setFetchedEditorials([]);
-        setFetchedAuthors([]);
-      } finally {
-        setLoadingFilters(false);
-      }
-    };
-
-    fetchFilterData();
-  }, [token]);
-
- 
- 
-  const debouncedSearch = useCallback(
-    debounce((nextValue: string) => {
-      setSearch(nextValue);
-      setPage(1);
-    }, 500),
-    []
-  );
-
- 
-  useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
-
- 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedSearch(e.target.value);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= lastPage) {
-      setPage(newPage);
-    }
-  };
-
-  const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLimit(Number(e.target.value));
-    setPage(1);
-  };
-
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const [field, order] = e.target.value.split(':');
-    setSortBy(field);
-    setSortOrder(order as 'asc' | 'desc');
-    setPage(1);
-  };
-
-  const handleDeleteBook = async (id: string) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este libro?')) {
-      return;
-    }
-    try {
-      setLoadingBooks(true);
-      await axios.delete(`${API_BASE_URL}/books/${id}`); // Asumiendo que el endpoint DELETE es /books/:id
-      alert('Libro eliminado exitosamente.');
-      fetchBooks();
-    } catch (err: any) {
-      console.error('Error al eliminar libro:', err.response?.data?.message || err.message);
-      setErrorBooks('Error al eliminar el libro. Inténtelo de nuevo.');
-      setLoadingBooks(false);
-    }
-  };
-
- 
   if (!token) return <div style={{ color: 'orange', textAlign: 'center', padding: '20px' }}>Debes iniciar sesión para ver los libros.</div>;
   if (loadingBooks && books.length === 0) return <div>Cargando libros...</div>;
   if (errorBooks) return <div style={{ color: 'red', textAlign: 'center', padding: '20px' }}>Error: {errorBooks}</div>;
@@ -270,12 +106,10 @@ const BookList: React.FC = () => {
 
         <select value={`${sortBy}:${sortOrder}`} onChange={handleSortChange}
                 style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}>
-          <option value="title:asc">Título (A-Z)</option>
-          <option value="title:desc">Título (Z-A)</option>
-          <option value="author:asc">Autor (A-Z)</option>
-          <option value="author:desc">Autor (Z-A)</option>
-          <option value="publishedYear:desc">Año Publicación (Desc)</option>
-          <option value="publishedYear:asc">Año Publicación (Asc)</option>
+          <option value="titulo:asc">Título (A-Z)</option>
+          <option value="titulo:desc">Título (Z-A)</option>
+          <option value="autor:asc">Autor (A-Z)</option>
+          <option value="autor:desc">Autor (Z-A)</option>
         </select>
       </div>
 
@@ -283,33 +117,40 @@ const BookList: React.FC = () => {
       {books.length === 0 && !loadingBooks && !errorBooks ? (
         <p style={{ textAlign: 'center', color: '#666', fontSize: '1.1em' }}>No se encontraron libros que coincidan con los criterios.</p>
       ) : (
- 
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-          {books.map((book) => (
-            <div key={book.id} style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
-              <img
-                src={book.imagenUrl ?? API_DEFAULT_BOOK_IMAGE}
-                alt={book.titulo}
-                style={{ width: '100%', height: '250px', objectFit: 'cover', borderBottom: '1px solid #eee' }}
-                onError={(e) => { e.currentTarget.src = API_DEFAULT_BOOK_IMAGE; }}
-              />
-              <div style={{ padding: '15px', flexGrow: 1 }}>
-                <h3 style={{ margin: '0 0 10px 0', color: '#007bff' }}>{book.titulo}</h3>
-                <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Autor: {book.autor}</p>
-                <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Género: {book.genero}</p>
-                <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Editorial: {book.editorial}</p>
-                <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Disponibilidad: {book.disponible ? '✅ Sí' : '❌ No'}</p>
+          {books.map((book) => {
+            // --- AQUÍ ESTÁ EL CAMBIO CLAVE PARA LA IMAGEN ---
+            const imageUrl = book.imagenUrl
+              ?? frontendHost+API_DEFAULT_BOOK_IMAGE; // Usa la imagen por defecto si no hay URL del libro
+            // ------------------------------------------------
+
+            return (
+              <div key={book.id} style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
+                <img
+                  src={imageUrl} // Usa la URL completa aquí
+                  alt={book.titulo}
+                  style={{ width: '100%', height: '250px', objectFit: 'cover', borderBottom: '1px solid #eee' }}
+                  onError={(e) => { e.currentTarget.src = API_DEFAULT_BOOK_IMAGE; }}
+                />
+                <div style={{ padding: '15px', flexGrow: 1 }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#007bff' }}>{book.titulo}</h3>
+                  <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Autor: {book.autor}</p>
+                  <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Género: {book.genero}</p>
+                  <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Editorial: {book.editorial}</p>
+                  <p style={{ margin: '0 0 5px 0', color: '#555', fontSize: '0.9em' }}>Disponibilidad: {book.disponible ? '✅ Sí' : '❌ No'}</p>
+                </div>
+                <div style={{ padding: '15px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-around', gap: '10px' }}>
+                  <Link to={`/books/${book.id}`} style={{ textDecoration: 'none', padding: '8px 12px', backgroundColor: '#28a745', color: 'white', borderRadius: '5px', fontSize: '0.9em', display: 'inline-block' }}>Ver Detalles</Link>
+                  <Link to={`/books/edit/${book.id}`} style={{ textDecoration: 'none', padding: '8px 12px', backgroundColor: '#ffc107', color: 'black', borderRadius: '5px', fontSize: '0.9em', display: 'inline-block' }}>Editar</Link>
+                  <button onClick={() => handleDeleteBook(book.id)}
+                          style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9em' }}>
+                    Eliminar
+                  </button>
+                </div>
               </div>
-              <div style={{ padding: '15px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-around', gap: '10px' }}>
-                <Link to={`/books/${book.id}`} style={{ textDecoration: 'none', padding: '8px 12px', backgroundColor: '#28a745', color: 'white', borderRadius: '5px', fontSize: '0.9em', display: 'inline-block' }}>Ver Detalles</Link>
-                <Link to={`/books/edit/${book.id}`} style={{ textDecoration: 'none', padding: '8px 12px', backgroundColor: '#ffc107', color: 'black', borderRadius: '5px', fontSize: '0.9em', display: 'inline-block' }}>Editar</Link>
-                <button onClick={() => handleDeleteBook(book.id)}
-                        style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9em' }}>
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

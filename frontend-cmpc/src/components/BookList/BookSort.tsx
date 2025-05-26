@@ -13,7 +13,7 @@ const BookSort: React.FC<BookSortProps> = ({ onSortChange, currentSortBy, curren
   };
 
   const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onSortChange(currentSortBy || 'title', e.target.value as 'asc' | 'desc');
+    onSortChange(currentSortBy || 'titulo', e.target.value as 'asc' | 'desc');
   };
 
   return (
@@ -22,11 +22,9 @@ const BookSort: React.FC<BookSortProps> = ({ onSortChange, currentSortBy, curren
       <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
         <div>
           <label htmlFor="sortBy">Campo:</label>
-          <select id="sortBy" value={currentSortBy || 'title'} onChange={handleSortByChange}>
-            <option value="title">Título</option>
-            <option value="author">Autor</option>
-            <option value="publishedYear">Año de Publicación</option>
-            {/* Agrega más opciones según tus campos de Book */}
+          <select id="sortBy" value={currentSortBy || 'titulo'} onChange={handleSortByChange}>
+            <option value="titulo">Título</option>
+            <option value="autor">Autor</option>
           </select>
         </div>
         <div>

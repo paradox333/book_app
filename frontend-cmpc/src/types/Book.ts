@@ -53,3 +53,32 @@ export interface PaginatedBooksResponse {
   lastPage: number;
   limit: number;
 }
+
+/**
+ * Representa una opción usada en los filtros (géneros, editoriales, autores…)
+ */
+export interface FilterOption<ID = string | number | null> {
+  id: ID;
+  nombre: string;
+  deletedAt?: string | null;
+}
+
+export interface BookPayload {
+    titulo: string;
+    autorId: number;
+    generoId: number;
+    editorialId: number;
+    precio: number;
+    disponible: boolean;
+    imagenUrl: string | undefined;
+}
+
+export interface UpdateBook{
+  titulo?: string;
+  autorId?: number;
+  generoId?: number;
+  precio?: number;
+  editorialId?: number;
+  disponible?: boolean;
+  imagenUrl?: File | null;
+}
