@@ -121,8 +121,8 @@ const BookList: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
           {books.map((book) => {
             // --- AQUÍ ESTÁ EL CAMBIO CLAVE PARA LA IMAGEN ---
-            const imageUrl = book.imagenUrl
-              ?? frontendHost+API_DEFAULT_BOOK_IMAGE; // Usa la imagen por defecto si no hay URL del libro
+            const imageUrl = book.imagenUrl ? frontendHost+book.imagenUrl
+              : frontendHost+API_DEFAULT_BOOK_IMAGE; // Usa la imagen por defecto si no hay URL del libro
             // ------------------------------------------------
 
             return (

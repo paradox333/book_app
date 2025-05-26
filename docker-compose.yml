@@ -16,7 +16,7 @@ services:
       - db
     environment:
       DB_HOST: db
-      DB_PORT: 5432   # dentro del contenedor es 5432
+      DB_PORT: 5432 
       DB_USER: admin
       DB_PASS: admin
       DB_NAME: postgres

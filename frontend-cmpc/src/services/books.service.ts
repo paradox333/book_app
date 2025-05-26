@@ -1,4 +1,4 @@
-import type { Book, BookPayload, FilterOption, LibroResponse, PaginatedBooksResponse, UpdateBook } from '../types/Book';
+import type { Book, BookCompletePayload, BookPayload, FilterOption, LibroResponse, PaginatedBooksResponse, UpdateBook } from '../types/Book';
 import { api } from './api';
 
 export const BookService = {
@@ -72,4 +72,44 @@ export const BookService = {
         headers: { Authorization: `Bearer ${token}` },
       }),
     ]),
+
+  // src/services/libros.service.ts
+
+// Suponiendo que BookCompletePayload es LibroFormValues,
+// ajusta el tipo si es necesario.
+
+
+createComplete: async (body: BookCompletePayload, token: string | null) => {
+
+    const formData = new FormData();
+
+
+    formData.append('titulo', body.titulo);
+    formData.append('autor', body.autor);
+    formData.append('editorial', body.editorial);
+    formData.append('genero', body.genero);
+    // Asegúrate de que el precio y disponible sean strings
+    formData.append('precio', body.precio.toString());
+    formData.append('disponible', body.disponible.toString());
+
+    if (body.imagen instanceof File) { 
+      formData.append('imagen', body.imagen); 
+    } 
+  
+
+    try {
+      const res = await api.post('/libros/complete', formData,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      return res.data;
+    } catch (err: any) {
+      console.error('Error creando libro completo (frontend):', err);
+      // Más logging detallado para depuración
+      throw err;
+    }
+},
 };

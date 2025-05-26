@@ -1,15 +1,16 @@
 import React from 'react';
 import ImageUpload from './ImageUpload';
-import type { FieldErrors, UseFormRegister } from 'react-hook-form';
+import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { FilterOption } from '../../types/Book';
 
 export interface LibroFormValues {
   titulo: string;
-  autorName: string;      // El nombre del autor (texto libre o escogido de la lista)
-  generoName: string;     // Igual para género
-  editorialName: string;  // Igual para editorial
+  autor: string;      // El nombre del autor (texto libre o escogido de la lista)
+  genero: string;     // Igual para género
+  editorial: string;  // Igual para editorial
   precio: number;
   disponible: boolean;
+  imagen?: File | null
 }
 
 interface Props {
@@ -20,7 +21,8 @@ interface Props {
   editoriales: FilterOption[];
   imagePreview: string | null;
   onImageSelect: (file: File | null, previewUrl: string | null) => void;
-  isEditMode: boolean
+  isEditMode: boolean,
+  setValue: UseFormSetValue<LibroFormValues>;
 }
 
 export const BookFormFields: React.FC<Props> = ({
@@ -31,7 +33,8 @@ export const BookFormFields: React.FC<Props> = ({
   editoriales,
   imagePreview,
   onImageSelect,
-  isEditMode
+  isEditMode,
+  setValue
 }) => {
   return (
     <>
@@ -53,7 +56,7 @@ export const BookFormFields: React.FC<Props> = ({
         <input
           type="text"
           id="autorName"
-          {...register('autorName', {
+          {...register('autor', {
             required: !isEditMode ? 'El autor es requerido' : false // <-- Lógica condicional
           })}
           list="autores-existentes"
@@ -64,7 +67,7 @@ export const BookFormFields: React.FC<Props> = ({
             <option key={autor.id} value={autor.nombre} />
           ))}
         </datalist>
-        {errors.autorName && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.autorName.message}</p>}
+        {errors.autor && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.autor.message}</p>}
       </div>
 
       <div>
@@ -72,7 +75,7 @@ export const BookFormFields: React.FC<Props> = ({
         <input
           type="text"
           id="generoName"
-          {...register('generoName', {
+          {...register('genero', {
             required: !isEditMode ? 'El género es requerido' : false // <-- Lógica condicional
           })}
           list="generos-existentes"
@@ -83,7 +86,7 @@ export const BookFormFields: React.FC<Props> = ({
             <option key={genero.id} value={genero.nombre} />
           ))}
         </datalist>
-        {errors.generoName && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.generoName.message}</p>}
+        {errors.genero && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.genero.message}</p>}
       </div>
 
       <div>
@@ -91,7 +94,7 @@ export const BookFormFields: React.FC<Props> = ({
         <input
           type="text"
           id="editorialName"
-          {...register('editorialName', {
+          {...register('editorial', {
             required: !isEditMode ? 'La editorial es requerida' : false // <-- Lógica condicional
           })}
           list="editoriales-existentes"
@@ -102,7 +105,7 @@ export const BookFormFields: React.FC<Props> = ({
             <option key={editorial.id} value={editorial.nombre} />
           ))}
         </datalist>
-        {errors.editorialName && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.editorialName.message}</p>}
+        {errors.editorial && <p className="error-message" style={{ color: 'red', fontSize: '0.9em' }}>{errors.editorial.message}</p>}
       </div>
 
       <div>
@@ -131,9 +134,11 @@ export const BookFormFields: React.FC<Props> = ({
         />
       </div>
 
-      {/* Componente de carga de imagen */}
       <ImageUpload
-        onImageSelect={onImageSelect}
+        onImageSelect={(file, previewUrl) => {
+          setValue('imagen', file, { shouldValidate: true }); // 
+          onImageSelect(file, previewUrl);
+        }}
         initialImagePreview={imagePreview}
       />
     </>

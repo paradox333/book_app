@@ -35,6 +35,7 @@ export class LibrosController {
         originalname: file.originalname,
       };
     }
+    console.log('info: ', fileInfo)
     return this.librosService.createCompleteLibro(body, fileInfo);
   }
 

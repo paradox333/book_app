@@ -24,7 +24,4 @@ export class CreateCompleteLibroDto {
   @IsString()
   disponible: string;
 
-  @IsOptional()
-  @IsString() // O @IsUrl() si siempre es una URL
-  imagenUrl?: string;
 }

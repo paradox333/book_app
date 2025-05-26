@@ -1,4 +1,5 @@
- 
+// src/components/ImageUpload.ts
+
 import React, { useState, useEffect } from 'react';
 
 interface ImageUploadProps {
@@ -9,7 +10,6 @@ interface ImageUploadProps {
 const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePreview }) => {
   const [preview, setPreview] = useState<string | null>(initialImagePreview || null);
 
- 
   useEffect(() => {
     setPreview(initialImagePreview || null);
   }, [initialImagePreview]);
@@ -19,11 +19,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePr
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
-        onImageSelect(file, reader.result as string);
+        const previewUrl = reader.result as string;
+        setPreview(previewUrl);
+        console.log('ImageUpload: Archivo recibido. Llamando onImageSelect con:', file.name, previewUrl); // <-- NUEVO LOG
+        onImageSelect(file, previewUrl);
       };
       reader.readAsDataURL(file);
     } else {
+      console.log('ImageUpload: Archivo deseleccionado. Llamando onImageSelect con null.'); // <-- NUEVO LOG
       setPreview(null);
       onImageSelect(null, null);
     }
@@ -31,8 +34,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePr
 
   const handleClearImage = () => {
     setPreview(null);
+    console.log('ImageUpload: Limpiando imagen. Llamando onImageSelect con null.'); // <-- NUEVO LOG
     onImageSelect(null, null);
- 
     const fileInput = document.getElementById('imageUpload') as HTMLInputElement;
     if (fileInput) fileInput.value = '';
   };
@@ -43,7 +46,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, initialImagePr
       <input
         type="file"
         id="imageUpload"
-        accept="image/*" // Solo acepta archivos de imagen
+        accept="image/*"
         onChange={handleFileChange}
         style={{ display: 'block', marginBottom: '10px' }}
       />

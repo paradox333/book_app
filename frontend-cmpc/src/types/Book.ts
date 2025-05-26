@@ -82,3 +82,13 @@ export interface UpdateBook{
   disponible?: boolean;
   imagenUrl?: File | null;
 }
+
+export interface BookCompletePayload {
+  titulo: string;
+  autor: string;
+  editorial: string;
+  genero: string;
+  precio: string;
+  disponible: string;
+  imagen?: File | null;
+}

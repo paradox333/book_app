@@ -17,7 +17,8 @@ const LibroForm: React.FC = () => {
     isEditMode, // <-- Asegúrate de desestructurar isEditMode
     generos,
     editoriales,
-    handleImageSelect
+    handleImageSelect,
+    setValue
   } = useLibroForm();
 
   // Mensajes de carga/error/éxito (fuera del formulario principal)
@@ -38,7 +39,7 @@ const LibroForm: React.FC = () => {
       {loading && <p>Guardando...</p>} {/* Mensaje de guardado durante onSubmit */}
 
       <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {/* Aquí es donde renderizamos el componente de campos */}
+        
         <BookFormFields
           register={register}
           errors={errors}
@@ -47,7 +48,8 @@ const LibroForm: React.FC = () => {
           editoriales={editoriales}
           imagePreview={imagePreview}
           onImageSelect={handleImageSelect}
-          isEditMode={isEditMode} // <-- ¡Pasamos isEditMode a los campos!
+          isEditMode={isEditMode} 
+          setValue={setValue}
         />
 
         <button type="submit" disabled={loading}
